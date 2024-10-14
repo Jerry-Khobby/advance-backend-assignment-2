@@ -254,19 +254,18 @@
  *                   type: string
  *                   example: Internal server error.
  */
-
 /**
  * @swagger
  * /profile:
  *   get:
- *     summary: Get all users
- *     description: Retrieve a list of all users. Only accessible to authenticated users.
- *     tags: [User]  # Changed this to match the User tag
+ *     summary: Retrieve the authenticated user's profile
+ *     description: Fetch the profile of the currently authenticated user. The JWT token is required in the authorization header.
+ *     tags: [User]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Successfully retrieved the list of users.
+ *         description: Successfully retrieved the user profile.
  *         content:
  *           application/json:
  *             schema:
@@ -274,36 +273,217 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Users retrieved successfully
- *                 users:
+ *                   example: "User profile retrieved successfully"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "607c191e810c19729de860ea"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       example: "johndoe@example.com"
+ *                     role:
+ *                       type: string
+ *                       example: "User"
+ *       401:
+ *         description: Unauthorized - No token or invalid token provided.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "unauthorized: No token provided"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error."
+ */
+
+/**
+ * @swagger
+ * /profile:
+ *   put:
+ *     summary: Update the authenticated user's profile
+ *     description: Allows the currently authenticated user to update their profile. Requires a JWT token in the authorization header.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []  # JWT authentication required
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The updated name of the user
+ *                 example: Jane Doe
+ *               email:
+ *                 type: string
+ *                 description: The updated email of the user
+ *                 example: janedoe@example.com
+ *               password:
+ *                 type: string
+ *                 description: The updated password of the user
+ *                 example: NewP@ssw0rd!
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Profile updated successfully.
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "607c191e810c19729de860ea"
+ *                     name:
+ *                       type: string
+ *                       example: "Jane Doe"
+ *                     email:
+ *                       type: string
+ *                       example: "janedoe@example.com"
+ *       400:
+ *         description: Bad request - invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid input
+ *       401:
+ *         description: Unauthorized - No token or invalid token provided.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized: No token provided."  # Updated example with quotes
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Deletes a user by ID. Only admins are allowed to perform this action.
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The ID of the user to be deleted.
+ *         schema:
+ *           type: string
+ *           example: 607c191e810c19729de860ea
+ *     responses:
+ *       204:
+ *         description: User deleted successfully.
+ *       403:
+ *         description: Forbidden - Only admins can delete users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden: Admins only"
+ *       404:
+ *         description: Not Found - User does not exist.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Not Found: User does not exist"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal Server Error"
+ */
+
+/**
+ * @swagger
+ * /public-data:
+ *   get:
+ *     summary: Retrieve public data
+ *     description: This endpoint provides access to data that can be viewed by any user, regardless of authentication status. It can be used to fetch information that is generally available to the public, such as promotional data or general announcements.
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved public data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Public data retrieved successfully
+ *                 data:
  *                   type: array
  *                   items:
  *                     type: object
  *                     properties:
- *                       _id:
+ *                       id:
  *                         type: string
- *                         example: 607c191e810c19729de860ea
- *                       name:
+ *                         example: "1"
+ *                       title:
  *                         type: string
- *                         example: John Doe
- *                       email:
+ *                         example: "Welcome to Our Service"
+ *                       description:
  *                         type: string
- *                         example: johndoe@example.com
- *                       role:
+ *                         example: "This is a promotional announcement available to all users."
+ *                       date:
  *                         type: string
- *                         example: User
- *       401:
- *         description: Unauthorized - No token or invalid token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "unauthorized: No token provided"  # Ensure this is properly formatted.
+ *                         format: date-time
+ *                         example: "2024-10-14T12:34:56Z"
  *       500:
- *         description: Server error.
+ *         description: Internal server error.
  *         content:
  *           application/json:
  *             schema:
@@ -311,9 +491,8 @@
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "Internal server error."  # Proper string format.
+ *                   example: Internal server error.
  */
-
 const express = require("express");
 
 const router = express.Router();
@@ -323,6 +502,9 @@ const verifyToken = require("../middlewares/jwt-verify");
 router.post("/auth/register", userController.register);
 router.post("/auth/login", userController.login);
 router.post("/auth/assign-role", verifyToken, userController.assign_roles);
-router.get("/profile", verifyToken, userController.getAllUser);
+router.get("/profile", verifyToken, userController.getProfile);
+router.put("/profile", verifyToken, userController.updateMe);
+router.delete("/user/:id", verifyToken, userController.delUser);
+router.get("/public-data", verifyToken, userController.publicdata);
 
 module.exports = router;

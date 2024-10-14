@@ -121,25 +121,146 @@ exports.assign_roles = async (req, res) => {
   }
 };
 
-
-
-exports.getAllUser = async (req, res) => {
+exports.getProfile = async (req, res) => {
   try {
-    const users = await User.find({}, "-password");
+    // Assuming `req.user` contains the authenticated user details from JWT
+    const userId = req.user._id;
+
+    // Find the user by ID and exclude the password field
+    const user = await User.findById(userId, "-password");
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    // Return the authenticated user's profile
     res.status(200).json({
-      message: "Users retrieved successfully",
-      users: users,
+      message: "User profile retrieved successfully",
+      user: user,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      error: "An error occurred while retrieving users",
+      error: "An error occurred while retrieving user profile",
     });
   }
 };
 
+exports.updateMe = async (req, res) => {
+  // Email regex pattern for basic email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // Password regex: Minimum 8 characters, mix of alphabet and symbols (no spaces)
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*[\W_]).{8,}$/;
 
-exports.updateUser=async(req,res)=>{
-  
-}
+  // Allowed roles
+  const allowedRoles = ["Admin", "Guest", "User"];
+  try {
+    const { email, role, password, name } = req.body;
+    const userId = req.userId; // From verifyToken middleware
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Validate email format if email is provided
+    if (email && !emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    // Validate role if provided
+    if (role && !allowedRoles.includes(role)) {
+      return res
+        .status(400)
+        .json({ error: `Role must be one of ${allowedRoles.join(", ")}` });
+    }
+
+    // Validate password if provided
+    if (password && !passwordRegex.test(password)) {
+      return res.status(400).json({
+        error:
+          "Password must be at least 8 characters long and contain a mix of letters and symbols",
+      });
+    }
+
+    // Update the user data
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+
+    // Hash the password before saving if it is provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10); // Generate a salt
+      user.password = await bcrypt.hash(password, salt); // Hash the password with the salt
+    }
+
+    // Save the updated user
+    await user.save();
+
+    res.status(200).json({
+      message: "User profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.delUser = async (req, res) => {
+  // Check if the user is an admin
+  if (!req.user.isAdmin) {
+    return res.status(403).json({ error: "Forbidden: Admins only" });
+  }
+
+  // Extract user ID from the request parameters
+  const userId = req.params.id;
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({ error: "Not Found: User does not exist" });
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Return success message
+    return res.status(204).send(); // 204 No Content
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Inside your controller file
+exports.publicdata = async (req, res) => {
+  try {
+    // Retrieve all users from the database, excluding the password field
+    const users = await User.find({}, "-password"); // Exclude password field
+
+    // Return the public data with a 200 status code
+    res.status(200).json({
+      message: "Public user data retrieved successfully",
+      users: users,
+    });
+  } catch (error) {
+    console.error("Error retrieving public data:", error);
+    res.status(500).json({
+      error: "An error occurred while retrieving public data",
+    });
+  }
+};
