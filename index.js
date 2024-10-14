@@ -27,7 +27,7 @@ app.use(cors());
 // Swagger setup
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // the routings
-app.use("/auth", route);
+app.use(route);
 
 //Mongodb connection
 const URI = process.env.MONGO_URI;

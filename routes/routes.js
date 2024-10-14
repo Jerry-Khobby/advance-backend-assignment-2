@@ -10,7 +10,7 @@
  * /auth/register:
  *   post:
  *     summary: Register a new user
- *     tags: [User Register]
+ *     tags: [User]  # Changed this to match the User tag
  *     requestBody:
  *       required: true
  *       content:
@@ -88,7 +88,7 @@
  *   post:
  *     summary: User login
  *     description: Authenticates a user by email and password, and returns a JWT token if the credentials are valid.
- *     tags: [User Login]
+ *     tags: [User]  # Changed this to match the User tag
  *     requestBody:
  *       required: true
  *       content:
@@ -168,7 +168,7 @@
  *   post:
  *     summary: Assign a role to a user (Admin-only)
  *     description: This endpoint allows an admin to assign a role (Admin, User, Guest) to another user. Only users with the 'Admin' role can use this endpoint.
- *     tags: [Changing Roles for User]
+ *     tags: [User]  # Changed this to match the User tag
  *     security:
  *       - bearerAuth: []  # Use the Bearer token for authentication
  *     requestBody:
@@ -255,14 +255,74 @@
  *                   example: Internal server error.
  */
 
+/**
+ * @swagger
+ * /profile:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieve a list of all users. Only accessible to authenticated users.
+ *     tags: [User]  # Changed this to match the User tag
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the list of users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Users retrieved successfully
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         example: 607c191e810c19729de860ea
+ *                       name:
+ *                         type: string
+ *                         example: John Doe
+ *                       email:
+ *                         type: string
+ *                         example: johndoe@example.com
+ *                       role:
+ *                         type: string
+ *                         example: User
+ *       401:
+ *         description: Unauthorized - No token or invalid token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "unauthorized: No token provided"  # Ensure this is properly formatted.
+ *       500:
+ *         description: Server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error."  # Proper string format.
+ */
+
 const express = require("express");
 
 const router = express.Router();
 const userController = require("../controllers/userController");
 const verifyToken = require("../middlewares/jwt-verify");
 
-router.post("/register", userController.register);
-router.post("/login", userController.login);
-router.post("/assign-role", verifyToken, userController.assign_roles);
+router.post("/auth/register", userController.register);
+router.post("/auth/login", userController.login);
+router.post("/auth/assign-role", verifyToken, userController.assign_roles);
+router.get("/profile", verifyToken, userController.getAllUser);
 
 module.exports = router;

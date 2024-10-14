@@ -120,3 +120,26 @@ exports.assign_roles = async (req, res) => {
     res.status(500).json({ error: "An error occurred while assigning role" });
   }
 };
+
+
+
+exports.getAllUser = async (req, res) => {
+  try {
+    const users = await User.find({}, "-password");
+    res.status(200).json({
+      message: "Users retrieved successfully",
+      users: users,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "An error occurred while retrieving users",
+    });
+  }
+};
+
+
+
+exports.updateUser=async(req,res)=>{
+  
+}
