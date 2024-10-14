@@ -87,3 +87,36 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+//req.user = user; // Attach the user object to request
+//req.userId = decoded.id;
+
+exports.assign_roles = async (req, res) => {
+  try {
+    const { id, role } = req.body;
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({ error: "Access denied: Admins Only" });
+    }
+    const validRoles = ["Guest", "User", "Admin"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: "Invalid role specified" });
+    }
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // check if the user being updated is not the same Admin(avoid self-role changes)
+    if (req.userId === targetUser.id) {
+      return res.status(400).json({ error: "Cannot change your own role" });
+    }
+    // assign the new role
+    targetUser.role = role;
+    await targetUser.save();
+    res.status(200).json({
+      message: `Role updated successfully to ${role} for the user ${targetUser.name}`,
+    });
+  } catch (error) {
+    console.error("Error assigning role:", error);
+    res.status(500).json({ error: "An error occurred while assigning role" });
+  }
+};
