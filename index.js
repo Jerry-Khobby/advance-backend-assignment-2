@@ -9,6 +9,9 @@ const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
 const { swaggerUi, swaggerDocs } = require("./docs/swagger");
 const route = require("./routes/routes");
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // Add { extended: true }
@@ -43,6 +46,15 @@ database.once("open", () => {
 });
 
 const port_number = process.env.PORT || 5000;
-app.listen(port_number, () => {
-  console.log(`The server is listening successfully on ${port_number}`);
-});
+
+// create an ssl server
+const sslServer = https.createServer(
+  {
+    key: fs.readFileSync(path.join(__dirname, "cert", "key.pem")),
+    cert: fs.readFileSync(path.join(__dirname, "cert", "cert.pem")),
+  },
+  app
+);
+sslServer.listen(port_number, () =>
+  console.log(`Secure server running on port ${port_number}`)
+);

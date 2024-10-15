@@ -1,4 +1,3 @@
-// swagger.js
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
@@ -12,7 +11,22 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:8000", // Update with your server URL
+        url: `https://localhost:${process.env.PORT || 5000}`, // Use HTTPS and specify the correct port
+      },
+    ],
+    components: {
+      securitySchemes: {
+        ApiKeyAuth: {
+          type: "apiKey",
+          in: "header",
+          name: "Authorization",
+          description: "Enter your bearer token (with the `Bearer ` prefix).",
+        },
+      },
+    },
+    security: [
+      {
+        ApiKeyAuth: [],
       },
     ],
   },
