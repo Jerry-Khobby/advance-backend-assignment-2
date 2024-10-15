@@ -2,6 +2,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
+const speakeasy = require("speakeasy");
+const nodemailer = require("nodemailer");
+
+// setup rate limiter :maximum of 5 request per minute
 
 secret = process.env.JWT_SECRET;
 exports.register = async (req, res) => {
@@ -76,10 +80,12 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+    //Generate a one-time password (OTP)
     const passwordmatch = await bcrypt.compare(password, user.password);
     if (!passwordmatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
     // asssigned the token
     const token = jwt.sign({ id: user._id }, secret, { expiresIn: "1h" });
     res.status(200).json({ message: "Login successfully", token: token });

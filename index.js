@@ -47,11 +47,13 @@ database.once("open", () => {
 
 const port_number = process.env.PORT || 5000;
 
+const SSL_SECRET_KEY = process.env.SSL_SECRET_KEY;
+const SSL_SECRET_CERT = process.env.SSL_SECRET_CERT_KEY;
 // create an ssl server
 const sslServer = https.createServer(
   {
-    key: fs.readFileSync(path.join(__dirname, "cert", "key.pem")),
-    cert: fs.readFileSync(path.join(__dirname, "cert", "cert.pem")),
+    key: SSL_SECRET_KEY,
+    cert: SSL_SECRET_CERT,
   },
   app
 );

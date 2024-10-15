@@ -86,9 +86,9 @@
  * @swagger
  * /auth/login:
  *   post:
- *     summary: User login
- *     description: Authenticates a user by email and password, and returns a JWT token if the credentials are valid.
- *     tags: [User]  # Changed this to match the User tag
+ *     summary: User Login
+ *     description: Authenticates a user using their email and password, returning a JWT token if the credentials are valid.
+ *     tags: [User]
  *     requestBody:
  *       required: true
  *       content:
@@ -99,21 +99,13 @@
  *               - email
  *               - password
  *             properties:
- *               name:
- *                 type: string
- *                 description: Name of the user.
- *                 example: John Doe
- *               role:
- *                 type: string
- *                 description: Role of the user.
- *                 example: Admin
  *               email:
  *                 type: string
- *                 description: Email address of the user.
+ *                 description: The email address of the user.
  *                 example: johndoe@example.com
  *               password:
  *                 type: string
- *                 description: Password for the user account.
+ *                 description: The password associated with the user account.
  *                 example: P@ssword123
  *     responses:
  *       200:
@@ -131,7 +123,7 @@
  *                   description: JWT token for authentication.
  *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
- *         description: Bad request, one or more fields are missing or invalid.
+ *         description: Bad request - one or more fields are missing or invalid.
  *         content:
  *           application/json:
  *             schema:
@@ -141,7 +133,7 @@
  *                   type: string
  *                   example: All fields are required
  *       401:
- *         description: Unauthorized, invalid credentials.
+ *         description: Unauthorized - invalid credentials.
  *         content:
  *           application/json:
  *             schema:
@@ -494,13 +486,22 @@
  *                   example: Internal server error.
  */
 const express = require("express");
-
 const router = express.Router();
 const userController = require("../controllers/userController");
 const verifyToken = require("../middlewares/jwt-verify");
+const rateLimit = require("express-rate-limit");
+
+// Set up rate limiter: maximum of 5 requests per minute
+const loginRateLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: {
+    error: "Too many login attempts from this IP, please try again later.",
+  },
+});
 
 router.post("/auth/register", userController.register);
-router.post("/auth/login", userController.login);
+router.post("/auth/login", loginRateLimiter, userController.login);
 router.post("/auth/assign-role", verifyToken, userController.assign_roles);
 router.get("/profile", verifyToken, userController.getProfile);
 router.put("/profile", verifyToken, userController.updateMe);
