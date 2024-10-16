@@ -56,17 +56,21 @@ exports.register = async (req, res) => {
   }
 };
 
+// Temporary in-memory store for OTPs, can replace with Redis or DB for production
+
+// Login Controller
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+
   if (!password || !email) {
     return res.status(400).json({ error: "All fields are required" });
   }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: "Invalid email format" });
   }
 
-  // Password validation
   const passwordRegex =
     /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   if (!passwordRegex.test(password)) {
@@ -75,22 +79,92 @@ exports.login = async (req, res) => {
         "Password must be at least 8 characters long and contain at least one letter, one digit, and one special character",
     });
   }
+
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    //Generate a one-time password (OTP)
-    const passwordmatch = await bcrypt.compare(password, user.password);
-    if (!passwordmatch) {
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // asssigned the token
-    const token = jwt.sign({ id: user._id }, secret, { expiresIn: "1h" });
-    res.status(200).json({ message: "Login successfully", token: token });
+    // Generate OTP
+    const otp = speakeasy.totp({
+      secret: process.env.OTP_SECRET,
+      encoding: "base32",
+    });
+
+    // Store OTP temporarily (In-memory or in database)
+    req.session.otp = otp; // Use session or a temporary storage
+
+    // Send OTP via email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: user.email,
+      subject: "Your OTP for Login",
+      text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
+    };
+
+    console.log(otp);
+
+    await transporter.sendMail(mailOptions);
+
+    // Send the response indicating the OTP was sent
+    return res.status(200).json({
+      message:
+        "OTP sent to your email. Please verify it. Please go into the verify route and verify the OTP to ensure that you are logged in",
+    });
+
+    // If you want to redirect to OTP verification page in a frontend system, handle it on the client side.
+    // Example: res.redirect("/auth/login/verifyOtp");  --> (REMOVE this if sending JSON response)
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  console.log(otp);
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Verify OTP
+    const isVerified = speakeasy.totp.verify({
+      secret: process.env.OTP_SECRET,
+      encoding: "base32",
+      token: otp,
+      window: 2, // Adjust the window to allow for a time drift
+    });
+
+    if (!isVerified) {
+      return res.status(400).json({ error: "Invalid or expired OTP" });
+    }
+
+    // OTP is valid, generate JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    res.status(200).json({ message: "Login successful", token });
+  } catch (error) {
+    res.status(500).json({ error: "OTP verification failed" });
   }
 };
 

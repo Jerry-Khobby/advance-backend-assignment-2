@@ -15,6 +15,7 @@ const User = new Schema({
     type: String,
     enum: ["Guest", "User", "Admin"],
     required: true,
+    default: "Guest",
   },
   email: {
     type: String,

@@ -502,6 +502,7 @@ const loginRateLimiter = rateLimit({
 
 router.post("/auth/register", userController.register);
 router.post("/auth/login", loginRateLimiter, userController.login);
+router.post("/auth/login/verifyOtp", userController.verifyOTP);
 router.post("/auth/assign-role", verifyToken, userController.assign_roles);
 router.get("/profile", verifyToken, userController.getProfile);
 router.put("/profile", verifyToken, userController.updateMe);
