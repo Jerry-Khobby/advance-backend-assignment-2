@@ -87,7 +87,7 @@
  * /auth/login:
  *   post:
  *     summary: User Login
- *     description: Authenticates a user using their email and password, returning a JWT token if the credentials are valid.
+ *     description: Authenticates a user using their email and password, returning an OTP sent to their email for further verification. The user must go to the verify route to verify the OTP within 5 minutes to complete the login process.
  *     tags: [User]
  *     requestBody:
  *       required: true
@@ -109,7 +109,7 @@
  *                 example: P@ssword123
  *     responses:
  *       200:
- *         description: Login successful, returns a JWT token.
+ *         description: OTP sent to the user's email for verification.
  *         content:
  *           application/json:
  *             schema:
@@ -117,11 +117,7 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Login successfully
- *                 token:
- *                   type: string
- *                   description: JWT token for authentication.
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                   example: "OTP sent to your email. Please verify it within 5 minutes to complete the login process."
  *       400:
  *         description: Bad request - one or more fields are missing or invalid.
  *         content:
@@ -131,7 +127,7 @@
  *               properties:
  *                 error:
  *                   type: string
- *                   example: All fields are required
+ *                   example: "All fields are required"
  *       401:
  *         description: Unauthorized - invalid credentials.
  *         content:
@@ -141,7 +137,7 @@
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Invalid credentials
+ *                   example: "Invalid credentials"
  *       500:
  *         description: Internal server error.
  *         content:
@@ -151,7 +147,79 @@
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Internal server error
+ *                   example: "Internal server error"
+ */
+
+/**
+ * @swagger
+ * /auth/verifyOtp:
+ *   post:
+ *     summary: Verify OTP
+ *     description: Verifies the OTP sent to the user's email during login. The user must have received an OTP after a successful login and must verify it within 5 minutes to complete the login process.
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email address of the user.
+ *                 example: johndoe@example.com
+ *               otp:
+ *                 type: string
+ *                 description: The OTP sent to the user's email for verification.
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: OTP verification successful, returns a JWT token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for authentication.
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       400:
+ *         description: Bad request - invalid or expired OTP.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid or expired OTP"
+ *       404:
+ *         description: Not found - user does not exist.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "OTP verification failed"
  */
 
 /**
