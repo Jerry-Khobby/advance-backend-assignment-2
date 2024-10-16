@@ -1,6 +1,5 @@
 
-```markdown
-# Your App Name
+# User Management and Authentication
 
 A brief description of your application and its purpose.
 
