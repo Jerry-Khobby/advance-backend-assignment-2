@@ -37,8 +37,8 @@ Follow these steps to set up the application on your local machine:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   [git clone https://github.com/yourusername/your-repo-name.git](https://github.com/Jerry-Khobby/advance-backend-assignment-2)
+   cd advance-backend-assignment-2
    ```
 
 2. Install the required dependencies:
@@ -51,6 +51,10 @@ Follow these steps to set up the application on your local machine:
    PORT=your_port_number
    MONGODB_URI=your_mongodb_uri
    JWT_SECRET=your_jwt_secret
+   EMAIL_PASSWORD=sdkjlasd
+   EMAIL_USERNAME=alskd
+   OTP_SECRET=ajsdl
+   
    ```
 
 4. Start the application:
