@@ -54,6 +54,8 @@ Follow these steps to set up the application on your local machine:
    EMAIL_PASSWORD=sdkjlasd
    EMAIL_USERNAME=alskd
    OTP_SECRET=ajsdl
+   SSL_SECRET_KEY=asldk
+   SSL_SECRET_CERT_KEY=asdjlaskd
    
    ```
 
