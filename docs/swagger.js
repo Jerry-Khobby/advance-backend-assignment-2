@@ -11,7 +11,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `https://localhost:${process.env.PORT || 5000}`, // Use HTTPS and specify the correct port
+        url: `http://localhost:${process.env.PORT || 5000}`, // Use HTTPS and specify the correct port
       },
     ],
   },
