@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const session = require("express-session"); // Correct package
 const dotenv = require("dotenv").config();
 const cookieParser = require("cookie-parser");
-const { swaggerUi, swaggerDocs } = require("./docs/swagger");
+const setupSwagger = require("./docs/swagger");
 const route = require("./routes/routes");
 const fs = require("fs");
 const path = require("path");
@@ -27,10 +27,10 @@ app.use(
 );
 
 app.use(cors());
-// Swagger setup
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // the routings
 app.use(route);
+// Swagger setup
+setupSwagger(app);
 
 //Mongodb connection
 const URI = process.env.MONGO_URI;
