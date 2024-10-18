@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv").config();
 const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
+const generateToken = require("../middlewares/jwt-generate");
 
 // setup rate limiter :maximum of 5 request per minute
 
@@ -49,7 +50,7 @@ exports.register = async (req, res) => {
     });
     await newUser.save();
     // Generate a JWT
-    const token = jwt.sign({ id: newUser._id }, secret, { expiresIn: "1h" });
+    const token = generateToken(newUser);
     res.status(200).json({ message: "Signup successful", token: token });
   } catch (error) {
     return res.status(500).json({ error: "Internal server error" });
@@ -154,14 +155,7 @@ exports.verifyOTP = async (req, res) => {
     }
 
     // OTP is valid, generate JWT
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
-
+    const token = generateToken(user);
     res.status(200).json({ message: "Login successful", token });
   } catch (error) {
     res.status(500).json({ error: "OTP verification failed" });

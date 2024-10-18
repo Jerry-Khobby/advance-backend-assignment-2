@@ -12,6 +12,7 @@ const route = require("./routes/routes");
 const fs = require("fs");
 const path = require("path");
 // const https = require("https"); // SSL server not needed for now
+const passport = require("passport");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,6 +27,9 @@ app.use(
   })
 );
 
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(cors());
 
 // the routings

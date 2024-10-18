@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
-const User = new Schema({
+const UserSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     auto: true,
@@ -9,7 +9,7 @@ const User = new Schema({
   },
   name: {
     type: String,
-    required: true,
+    required: true, // Required for both GitHub and regular users
   },
   role: {
     type: String,
@@ -19,13 +19,27 @@ const User = new Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: true, // Required for both GitHub and regular users
     unique: true,
+    index: true, // Helps in querying the email quickly
   },
   password: {
     type: String,
-    required: true,
+    required: false, // Required for regular email/password users, but optional for OAuth users
+  },
+  accountId: {
+    type: String,
+    unique: true, // GitHub user accountId, optional for non-GitHub users
+    required: false, // Only required for GitHub users
+  },
+  provider: {
+    type: String,
+    required: false, // Only required for OAuth users like GitHub
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now, // Automatically set the creation time
   },
 });
 
-module.exports = mongoose.model("User", User);
+module.exports = mongoose.model("User", UserSchema);

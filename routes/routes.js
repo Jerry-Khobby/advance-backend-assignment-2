@@ -553,11 +553,188 @@
  *                   type: string
  *                   example: Internal server error.
  */
+
+
+
+/**
+ * @swagger
+ * tags:
+ *   name: GitHub OAuth
+ *   description: GitHub authentication operations
+ */
+
+/**
+ * @swagger
+ * /auth/github:
+ *   get:
+ *     summary: Initiate GitHub login
+ *     description: Redirects the user to GitHub for authentication. This endpoint requires the user to grant permission to access their GitHub account.
+ *     tags: [GitHub OAuth]
+ *     responses:
+ *       302:
+ *         description: Redirects to GitHub for authentication.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /auth/github/callback:
+ *   get:
+ *     summary: GitHub callback
+ *     description: Handles the callback from GitHub after authentication. It exchanges the authorization code for an access token and retrieves user information.
+ *     tags: [GitHub OAuth]
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Authentication successful"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "123456"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       example: "johndoe@example.com"
+ *                     avatar_url:
+ *                       type: string
+ *                       example: "https://avatars.githubusercontent.com/u/123456?v=4"
+ *                 token:
+ *                   type: string
+ *                   description: JWT token for the authenticated user.
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       400:
+ *         description: Bad request - failed to authenticate with GitHub.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to authenticate with GitHub"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /auth/github/success:
+ *   get:
+ *     summary: GitHub authentication success page
+ *     description: Displays a success message after successful GitHub authentication.
+ *     tags: [GitHub OAuth]
+ *     responses:
+ *       200:
+ *         description: Displays a success message.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<h1>Authentication successful!</h1>"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /auth/github/error:
+ *   get:
+ *     summary: GitHub authentication error page
+ *     description: Displays an error message if GitHub authentication fails.
+ *     tags: [GitHub OAuth]
+ *     responses:
+ *       200:
+ *         description: Displays an error message.
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<h1>Authentication failed!</h1>"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /auth/github/signout:
+ *   get:
+ *     summary: Sign out from GitHub
+ *     description: Logs the user out of their GitHub account and clears the session.
+ *     tags: [GitHub OAuth]
+ *     responses:
+ *       200:
+ *         description: Successfully signed out.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully signed out"
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
 const verifyToken = require("../middlewares/jwt-verify");
 const rateLimit = require("express-rate-limit");
+const githubAuthController = require("../controllers/github-auth");
+const passport = require("passport");
 
 // Set up rate limiter: maximum of 5 requests per minute
 const loginRateLimiter = rateLimit({
@@ -577,4 +754,21 @@ router.put("/profile", verifyToken, userController.updateMe);
 router.delete("/user/:id", verifyToken, userController.delUser);
 router.get("/public-data", verifyToken, userController.publicdata);
 
+// Route to initiate GitHub login
+router.get(
+  "/auth/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
+
+// Route for GitHub callback
+router.get("/auth/github/callback", githubAuthController.githubCallback);
+
+// Route for success page
+router.get("/auth/github/success", githubAuthController.githubSuccess);
+
+// Route for error page
+router.get("/auth/github/error", githubAuthController.githubError);
+
+// Route for signout
+router.get("/auth/github/signout", githubAuthController.githubSignOut);
 module.exports = router;
