@@ -19,7 +19,7 @@ const UserSchema = new Schema({
   },
   email: {
     type: String,
-    required: true, // Required for both GitHub and regular users
+    required: false, // Required for both GitHub and regular users
     unique: true,
     index: true, // Helps in querying the email quickly
   },

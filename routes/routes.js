@@ -755,10 +755,7 @@ router.delete("/user/:id", verifyToken, userController.delUser);
 router.get("/public-data", verifyToken, userController.publicdata);
 
 // Route to initiate GitHub login
-router.get(
-  "/auth/github",
-  passport.authenticate("github", { scope: ["user:email"] })
-);
+router.get("/auth/github",passport.authenticate("github", { scope: ["user:email"] }));
 
 // Route for GitHub callback
 router.get("/auth/github/callback", githubAuthController.githubCallback);

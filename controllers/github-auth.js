@@ -1,7 +1,8 @@
 const User = require("../models/user");
 const passport = require("passport");
 const GithubStrategy = require("passport-github2");
-const jwtGenerate = require("../middlewares/jwt-generate");
+const jwtGenerate = require("../middlewares/jwt-generate").generateToken;
+const dotenv = require("dotenv").config();
 
 // Github Strategy setup
 passport.use(
@@ -23,19 +24,20 @@ passport.use(
 
         if (!user) {
           // Add new GitHub user
+          console.log("Adding new github user to DB..");
           user = new User({
             accountId: profile.id,
-            name: profile.username || profile.displayName,
+            name: profile.username,
             provider: profile.provider,
           });
           console.log("Creating new user:", user);
           await user.save();
           console.log("New user saved:", user);
-          return cb(null, user);
+          return cb(null, profile);
         } else {
           // User already exists
           console.log("User already exists:", user);
-          return cb(null, user);
+          return cb(null, profile);
         }
       } catch (error) {
         console.error("Error during GitHub authentication:", error);
@@ -50,19 +52,22 @@ exports.githubCallback = (req, res) => {
   passport.authenticate(
     "github",
     { failureRedirect: "/auth/github/error" },
-    function (err, user) {
+    (err, user, info) => {
       if (err) {
         console.error("Authentication error:", err);
         return res.status(401).json({
           status: "fail",
           message: "GitHub authentication failed",
+          error: err.message || "Unknown error",
         });
       }
+
       if (!user) {
-        console.error("User not found after authentication");
+        console.error("User not found after authentication:", info);
         return res.status(401).json({
           status: "fail",
           message: "GitHub authentication failed",
+          info: info || "No additional info provided", // Log additional info
         });
       }
 
