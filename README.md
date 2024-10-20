@@ -10,6 +10,7 @@ A brief description of your application and its purpose.
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Documentation](#api-documentation)
+- [GitHub Authentication](#github-authentication)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
@@ -21,12 +22,15 @@ A brief description of your application and its purpose.
 - JWT-based authentication
 - OTP verification for secure login
 - User profile management
+- **GitHub OAuth login for easy authentication**
 
 ## Technologies Used
 
 - Node.js
 - Express.js
-- MongoDB (or any other database you are using)
+- MongoDB
+- Passport.js (for authentication strategies)
+- JWT (JSON Web Tokens for authentication)
 - Swagger (for API documentation)
 - dotenv (for environment variable management)
 - [Other libraries/frameworks you are using]
@@ -37,7 +41,7 @@ Follow these steps to set up the application on your local machine:
 
 1. Clone the repository:
    ```bash
-   [git clone https://github.com/yourusername/your-repo-name.git](https://github.com/Jerry-Khobby/advance-backend-assignment-2)
+   git clone https://github.com/Jerry-Khobby/advance-backend-assignment-2
    cd advance-backend-assignment-2
    ```
 
@@ -51,12 +55,14 @@ Follow these steps to set up the application on your local machine:
    PORT=your_port_number
    MONGODB_URI=your_mongodb_uri
    JWT_SECRET=your_jwt_secret
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+   GITHUB_CALLBACK_URL=http://localhost:your_port_number/auth/github/callback
    EMAIL_PASSWORD=sdkjlasd
    EMAIL_USERNAME=alskd
    OTP_SECRET=ajsdl
    SSL_SECRET_KEY=asldk
    SSL_SECRET_CERT_KEY=asdjlaskd
-   
    ```
 
 4. Start the application:
@@ -126,9 +132,41 @@ Follow these steps to set up the application on your local machine:
      }
      ```
 
+## GitHub Authentication
+
+This project also supports user authentication using GitHub OAuth. It enables users to log in or register using their GitHub account credentials.
+
+### GitHub Authentication Routes:
+
+1. **Initiate GitHub Login**:
+   - GET `/auth/github`
+   - This route redirects the user to GitHub to authenticate.
+
+2. **GitHub Callback**:
+   - GET `/auth/github/callback`
+   - After authentication, GitHub redirects to this route with an authorization code. This route handles the OAuth callback and logs the user in or registers a new user if one does not exist.
+
+3. **GitHub Success**:
+   - GET `/auth/github/success`
+   - Returns the logged-in user's information after a successful login.
+
+4. **GitHub Error**:
+   - GET `/auth/github/error`
+   - Returns an error message if the GitHub login process fails.
+
+5. **GitHub Sign Out**:
+   - GET `/auth/github/signout`
+   - Logs the user out by destroying their session.
+
+### Example Flow:
+1. The user clicks a "Login with GitHub" button, which sends a request to `/auth/github`.
+2. The user is redirected to GitHub for authentication.
+3. After authentication, GitHub redirects back to `/auth/github/callback` where the app processes the login.
+4. If successful, the user’s information is returned via `/auth/github/success`.
+
 ## API Documentation
 
-For detailed API documentation, visit [Swagger UI](http://localhost:your_port_number/api-docs) after running the app.
+For detailed API documentation, visit [Swagger UI](http://localhost:8000/api-docs) after running the app.
 
 ## Contributing
 
@@ -144,19 +182,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-Your Name - [your.email@example.com](mailto:your.email@example.com)
+Your Name - [your.email@example.com](mailto:jerrymardeburg@gmail.com)
 
-Project Link: [https://github.com/yourusername/your-repo-name](https://github.com/yourusername/your-repo-name)
-```
-
-### Customization Notes
-- **Your App Name**: Replace with the actual name of your application.
-- **Description**: Provide a brief summary of what your app does.
-- **Technologies Used**: List all the key technologies and libraries your app relies on.
-- **Installation Instructions**: Adjust the steps according to your app's setup needs.
-- **Usage Section**: You can expand this section with more specific instructions or examples for different features.
-- **API Documentation**: Ensure that the link to Swagger UI corresponds to your local setup or hosting.
-- **License**: Include the relevant license details.
-- **Contact Information**: Provide your contact information for any inquiries or support requests.
-
-Feel free to modify and expand the README to better fit your application's specific features and requirements!
+Project Link: [https://github.com/yourusername/your-repo-name](https://github.com/Jerry-Khobby/advance-backend-assignment-2)
